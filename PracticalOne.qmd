@@ -1,11 +1,65 @@
 ---
-title: "PracticalOne"
+title: "Practical One"
+author: "Lara Stipinovich"
+format: html
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+## Question 1
 
 ```{r}
-1 + 1
+data("airquality")
+
+missing_rows_logical <- apply(airquality, 1, function(row) any(is.na(row)))
+missing_rows <- airquality[missing_rows_logical, ]
+print(missing_rows)
+sum(missing_rows_logical)
+```
+
+## Question 2
+
+```{r}
+##Temperature:
+mean(airquality$Temp, na.rm = TRUE)
+sd(airquality$Temp, na.rm = TRUE)
+min(airquality$Temp, na.rm = TRUE)
+max(airquality$Temp, na.rm = TRUE)
+
+##Ozone:
+mean(airquality$Ozone, na.rm = TRUE)
+sd(airquality$Ozone, na.rm = TRUE)
+min(airquality$Ozone, na.rm = TRUE)
+max(airquality$Ozone, na.rm = TRUE)
+```
+
+## Question 3
+
+```{r}
+
+Y <- matrix(cars$dist)
+X <- cbind(1, cars$speed)
+
+beta_hat <- solve(t(X)%*%X) %*% t(X)%*%Y
+resids <- Y - X %*% beta_hat
+no_obs <- nrow(X)
+no_params <- ncol(X)
+sigma_sqrd <- sum(resids^2) / (no_obs - no_params)
+var_covar_matrix <- sigma_sqrd * solve(t(X) %*% X)
+se_beta_hat <- sqrt(diag(var_covar_matrix))
+t_values <- beta_hat / se_beta_hat
+p_values <- 2 * (1 - pt(abs(t_values), df = no_obs - no_params))
+
+answers <- data.frame(
+  beta_hat = beta_hat,
+  standard_errors = se_beta_hat,
+  t_value = t_values,
+  p_value = p_values
+)
+print(answers)
+```
+
+## Question 4
+
+```{r}
+lm_model <- lm(dist ~ speed, data = cars) 
+summary(lm_model)
 ```

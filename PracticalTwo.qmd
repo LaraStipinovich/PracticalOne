@@ -1,0 +1,89 @@
+---
+title: "Practical Two"
+author: "Lara Stipinovich"
+format: html
+---
+
+## Part 1:
+
+```{r}
+#Setting the seed and generating the data
+set.seed(1)
+
+X <- seq(1,100, 1)
+
+n <- length(x)
+e <- rnorm(n, mean = 0, sd = 0.2)
+Y <- sin(x/10) + e
+```
+
+## Part 2:
+
+```{r}
+#creating the custom Lowess function to calculate the smoothed values for X
+customLowess <- function(x, y, f){
+  n <- length(x)
+  k <- floor(n*f)
+  #creating vector to store smoothed values
+  smoothed_values <- numeric(n)
+  
+  #function computes the smoothed value for one point xi
+  smoothed_point <- function(i){
+    x_target <- x[i]
+    #finding abs distance and nearest neighbor
+    distances <- abs(x - x_target)
+    neighbor_ind <- order(distances)[1:k]
+    
+    x_neighbors <- x[neighbor_ind]
+    y_neighbors <- y[neighbor_ind]
+    neighbour_dist <- distances[neighbor_ind]
+    d_max <- max(neighbour_dist)
+    
+    #creatinf the design matrix with intercepts
+    X_matrix <- cbind(1, x_neighbors)
+    
+    #computing the tricube weights
+    weight_vals <- (1 - (neighbour_dist / d_max)^3)^3
+    #Convert weights to diaggonal matrix
+    W_matrix <- diag(weight_vals)
+    
+    #Computing the weighted regression coeffs
+    beta_coeff <- solve(t(X_matrix) %*% W_matrix %*% X_matrix) %*% t(X_matrix) %*% W_matrix %*% y_neighbors
+    
+    #returns smoothed value for xi
+    return(beta_coeff[1] + beta_coeff[2] * x_target)
+  }
+  
+  #applying the smoothing function to each point in X
+  smoothed_values <- map_dbl(seq_along(x), smoothed_point)
+  return(smoothed_values)
+}
+
+smoothed_y <- customLowess(X, Y, f=0.5)
+```
+
+## Part 3:
+
+```{r}
+lowess_function <- lowess(X, Y, f = 0.5)
+```
+
+## Part 4:
+
+```{r}
+#A comparrioson in smoothed values from the originl Lowess function and the created one
+
+plot(X, Y, col = "darkgray", pch = 16, main = "Lowess Smoothing Comparison", ylab = "Y", xlab = "X")
+lines(X, smoothed_y, col = "blue", lwd = 2)
+lines(lowess_function, col = "pink", lwd = 2)
+legend("topright", 
+       legend = c("Original Data", "Custom Lowess", "Built-in Lowess"), 
+       col = c("darkgray", "blue", "pink"), 
+       pch = c(16, NA, NA), 
+       lty = c(NA, 1, 1), 
+       lwd = c(NA, 2, 2),
+       cex = 0.4)
+
+```
+
+## 
