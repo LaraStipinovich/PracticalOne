@@ -9,6 +9,7 @@ format: html
 ```{r}
 data("airquality")
 
+
 missing_rows_logical <- apply(airquality, 1, function(row) any(is.na(row)))
 missing_rows <- airquality[missing_rows_logical, ]
 print(missing_rows)
